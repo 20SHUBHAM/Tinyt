@@ -1,0 +1,45 @@
+[project]
+name = "agentic-focus-group"
+version = "1.0.0"
+description = "AI-powered focus group discussion platform using TinyTroupe"
+authors = [
+    {name = "Focus Group AI", email = "admin@focusgroup.ai"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "Flask>=2.3.3",
+    "tinytroupe>=0.1.0",
+    "python-dotenv>=1.0.0",
+    "openai>=1.0.0",
+    "anthropic>=0.3.0",
+    "requests>=2.31.0",
+    "Werkzeug>=2.3.7",
+    "Jinja2>=3.1.2",
+    "gunicorn>=21.2.0",
+    "click>=8.1.7",
+    "itsdangerous>=2.1.2",
+    "MarkupSafe>=2.1.3"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-flask>=1.3.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0"
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
