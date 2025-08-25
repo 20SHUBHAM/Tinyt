@@ -54,21 +54,27 @@ class FocusGroupWorkflow {
     async generatePersonas() {
         const description = document.getElementById('audienceDescription').value.trim();
         const numPersonas = parseInt(document.getElementById('numPersonas').value);
+        const quickMode = document.getElementById('quickMode').checked;
         
         if (!description) {
             this.app.showAlert('Please provide a description of your target audience.', 'warning');
             return;
         }
         
-        const loading = this.app.showLoading(
-            'Generating Personas...', 
-            'Creating diverse, realistic personas based on your description.'
-        );
+        const loadingText = quickMode ? 
+            'Generating Personas (Quick Mode)...' : 
+            'Generating Personas (Detailed Mode)...';
+        const loadingSubtext = quickMode ? 
+            'Quick generation in progress (~15 seconds)' : 
+            'This may take 30-60 seconds. Creating detailed, realistic personas.';
+        
+        const loading = this.app.showLoading(loadingText, loadingSubtext);
         
         try {
             const result = await this.app.apiCall('/api/generate-personas', 'POST', {
                 description: description,
-                num_personas: numPersonas
+                num_personas: numPersonas,
+                quick_mode: quickMode
             });
             
             this.app.sessionData.sessionId = result.session_id;

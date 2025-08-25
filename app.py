@@ -44,6 +44,7 @@ def generate_personas():
         data = request.get_json()
         description = data.get('description', '')
         num_personas = data.get('num_personas', 6)
+        quick_mode = data.get('quick_mode', False)
         
         # Generate session ID
         session_id = str(uuid.uuid4())
@@ -51,7 +52,12 @@ def generate_personas():
         
         # Initialize persona generator agent
         persona_agent = PersonaGeneratorAgent(config)
-        personas = persona_agent.generate_personas(description, num_personas)
+        
+        # Choose generation method based on quick_mode
+        if quick_mode:
+            personas = persona_agent.generate_quick_personas(description, num_personas)
+        else:
+            personas = persona_agent.generate_personas(description, num_personas)
         
         # Store personas in session
         session_manager.store_personas(session_id, personas)
@@ -59,7 +65,8 @@ def generate_personas():
         return jsonify({
             'success': True,
             'session_id': session_id,
-            'personas': personas
+            'personas': personas,
+            'quick_mode': quick_mode
         })
         
     except Exception as e:

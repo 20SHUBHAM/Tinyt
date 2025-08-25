@@ -58,7 +58,8 @@ class LLMClient:
                 {"role": "user", "content": prompt}
             ],
             max_tokens=max_tokens,
-            temperature=temperature
+            temperature=temperature,
+            timeout=60  # 60 second timeout
         )
         
         return response.choices[0].message.content

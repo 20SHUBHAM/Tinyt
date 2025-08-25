@@ -26,105 +26,57 @@ class PersonaGeneratorAgent(BaseAgent):
             List of detailed persona dictionaries
         """
         
-        prompt = f"""
-        You are an expert market researcher and persona generator. Create {num_personas} detailed, diverse personas based on this description:
-        
-        "{description}"
-        
-        For each persona, generate a comprehensive profile that includes:
-        
-        1. **Basic Demographics**:
-           - Name (realistic, culturally appropriate)
-           - Age
-           - Gender
-           - Location (city/region)
-           - Occupation
-           - Income level/spending power
-        
-        2. **Psychographic Profile**:
-           - Personality traits (3-4 key traits)
-           - Values and motivations
-           - Lifestyle characteristics
-           - Communication style
-           - Decision-making patterns
-        
-        3. **Behavioral Patterns**:
-           - Shopping behaviors
-           - Brand preferences
-           - Technology usage
-           - Social media habits
-           - Information sources
-        
-        4. **Context-Specific Details**:
-           - Relevant pain points or challenges
-           - Goals and aspirations
-           - Budget constraints or spending patterns
-           - Experience level with the topic
-           - Specific preferences or aversions
-        
-        5. **Discussion Style**:
-           - How they participate in group discussions
-           - Tendencies to agree/disagree
-           - Leadership vs follower characteristics
-           - Interruption patterns
-           - Speaking confidence level
-        
-        IMPORTANT REQUIREMENTS:
-        - Make personas genuinely diverse across demographics, psychographics, and behaviors
-        - Include realistic budget/income constraints that affect behavior
-        - Create natural personality conflicts and complementary dynamics
-        - Ensure personas have authentic speech patterns and vocabulary
-        - Include specific, memorable details that make them feel real
-        - Consider different experience levels and engagement styles
-        
-        Return the personas as a JSON array where each persona has this structure:
-        {{
-            "id": "unique_id",
-            "name": "Full Name",
-            "demographics": {{
-                "age": number,
-                "gender": "string",
-                "location": "string",
-                "occupation": "string",
-                "income_level": "string"
-            }},
-            "psychographics": {{
-                "personality_traits": ["trait1", "trait2", "trait3"],
-                "values": ["value1", "value2"],
-                "lifestyle": "description",
-                "communication_style": "description",
-                "decision_making": "description"
-            }},
-            "behaviors": {{
-                "shopping_behavior": "description",
-                "brand_preferences": "description",
-                "technology_usage": "description",
-                "social_media": "description",
-                "information_sources": ["source1", "source2"]
-            }},
-            "context_specific": {{
-                "pain_points": ["point1", "point2"],
-                "goals": ["goal1", "goal2"],
-                "budget_constraints": "description",
-                "experience_level": "string",
-                "preferences": "description"
-            }},
-            "discussion_style": {{
-                "participation_level": "high/medium/low",
-                "agreement_tendency": "agreeable/neutral/contrarian",
-                "leadership_style": "leader/follower/balanced",
-                "interruption_pattern": "frequent/occasional/rare",
-                "confidence_level": "high/medium/low",
-                "speaking_style": "description"
-            }},
-            "background_story": "A brief narrative that brings this persona to life"
-        }}
-        
-        Make sure each persona feels like a real person with authentic motivations, constraints, and quirks.
-        """
+        prompt = f"""Create {num_personas} diverse personas for: "{description}"
+
+Return ONLY a JSON array with this exact structure for each persona:
+
+[{{
+  "id": "unique_id",
+  "name": "Full Name",
+  "demographics": {{
+    "age": 25,
+    "gender": "string",
+    "location": "City",
+    "occupation": "Job Title",
+    "income_level": "Level"
+  }},
+  "psychographics": {{
+    "personality_traits": ["trait1", "trait2", "trait3"],
+    "values": ["value1", "value2"],
+    "lifestyle": "brief description",
+    "communication_style": "brief description",
+    "decision_making": "brief description"
+  }},
+  "behaviors": {{
+    "shopping_behavior": "brief description",
+    "brand_preferences": "brief description", 
+    "technology_usage": "brief description",
+    "social_media": "brief description",
+    "information_sources": ["source1", "source2"]
+  }},
+  "context_specific": {{
+    "pain_points": ["point1", "point2"],
+    "goals": ["goal1", "goal2"],
+    "budget_constraints": "brief description",
+    "experience_level": "beginner/intermediate/expert",
+    "preferences": "brief description"
+  }},
+  "discussion_style": {{
+    "participation_level": "high/medium/low",
+    "agreement_tendency": "agreeable/neutral/contrarian",
+    "leadership_style": "leader/follower/balanced",
+    "interruption_pattern": "frequent/occasional/rare",
+    "confidence_level": "high/medium/low",
+    "speaking_style": "brief description"
+  }},
+  "background_story": "One sentence background story"
+}}]
+
+Make personas diverse in demographics, personality, and behavior. Include realistic constraints and authentic details."""
         
         try:
-            response = self.llm_client.generate(prompt)
+            # Use faster generation with optimized parameters
+            response = self.llm_client.generate(prompt, max_tokens=3000, temperature=0.7)
             
             # Extract JSON from response
             json_start = response.find('[')
@@ -152,6 +104,93 @@ class PersonaGeneratorAgent(BaseAgent):
             self.logger.error(f"Error generating personas: {e}")
             return self._generate_fallback_personas(description, num_personas)
     
+    def generate_quick_personas(self, description: str, num_personas: int = 6) -> List[Dict[str, Any]]:
+        """
+        Generate personas quickly using a simplified prompt
+        
+        Args:
+            description: Free-text description of target audience
+            num_personas: Number of personas to generate
+            
+        Returns:
+            List of basic persona dictionaries
+        """
+        
+        quick_prompt = f"""Create {num_personas} simple personas for "{description}".
+
+Return JSON array:
+[{{
+  "id": "1",
+  "name": "Name",
+  "demographics": {{"age": 25, "occupation": "Job", "location": "City"}},
+  "personality_traits": ["trait1", "trait2"],
+  "background_story": "Brief background"
+}}]
+
+Make them diverse and realistic."""
+        
+        try:
+            response = self.llm_client.generate(quick_prompt, max_tokens=1000, temperature=0.8)
+            json_str = self._extract_json_from_response(response, '[', ']')
+            personas = json.loads(json_str)
+            
+            # Expand simple personas to full structure
+            return self._expand_simple_personas(personas, description)
+            
+        except Exception as e:
+            self.logger.error(f"Quick generation failed: {e}")
+            return self._generate_fallback_personas(description, num_personas)
+    
+    def _expand_simple_personas(self, simple_personas: List[Dict], description: str) -> List[Dict[str, Any]]:
+        """Expand simple personas to full structure"""
+        
+        expanded = []
+        for persona in simple_personas:
+            expanded_persona = {
+                "id": str(uuid.uuid4()),
+                "name": persona.get("name", "Participant"),
+                "demographics": {
+                    "age": persona.get("demographics", {}).get("age", 25),
+                    "gender": "diverse",
+                    "location": persona.get("demographics", {}).get("location", "Urban"),
+                    "occupation": persona.get("demographics", {}).get("occupation", "Professional"),
+                    "income_level": "moderate"
+                },
+                "psychographics": {
+                    "personality_traits": persona.get("personality_traits", ["curious", "thoughtful"]),
+                    "values": ["authenticity", "value"],
+                    "lifestyle": "Modern lifestyle",
+                    "communication_style": "Direct and honest",
+                    "decision_making": "Research-based"
+                },
+                "behaviors": {
+                    "shopping_behavior": "Online and offline mix",
+                    "brand_preferences": "Quality-focused",
+                    "technology_usage": "Regular user",
+                    "social_media": "Active",
+                    "information_sources": ["online", "friends"]
+                },
+                "context_specific": {
+                    "pain_points": ["budget constraints"],
+                    "goals": ["good value"],
+                    "budget_constraints": "Moderate budget",
+                    "experience_level": "intermediate",
+                    "preferences": "Practical"
+                },
+                "discussion_style": {
+                    "participation_level": "medium",
+                    "agreement_tendency": "balanced",
+                    "leadership_style": "collaborative",
+                    "interruption_pattern": "occasional",
+                    "confidence_level": "medium",
+                    "speaking_style": "Conversational"
+                },
+                "background_story": persona.get("background_story", f"Interested in {description}")
+            }
+            expanded.append(expanded_persona)
+        
+        return expanded
+
     def _generate_fallback_personas(self, description: str, num_personas: int) -> List[Dict[str, Any]]:
         """Generate basic fallback personas if main generation fails"""
         
