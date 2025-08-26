@@ -89,6 +89,53 @@ class LLMClient:
         
         return response.content[0].text
     
+    def _generate_bedrock(self, prompt: str, max_tokens: int, temperature: float) -> str:
+        """Generate response using AWS Bedrock with Anthropic Claude"""
+        
+        model_id = self.llm_config['model']
+        
+        # Prepare the request body for Anthropic Claude models
+        if 'claude-3' in model_id:
+            body = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ]
+            }
+        else:
+            # For older Claude models (claude-v2, claude-instant)
+            body = {
+                "prompt": f"\n\nHuman: {prompt}\n\nAssistant:",
+                "max_tokens_to_sample": max_tokens,
+                "temperature": temperature,
+                "stop_sequences": ["\n\nHuman:"]
+            }
+        
+        try:
+            response = self.client.invoke_model(
+                modelId=model_id,
+                body=json.dumps(body),
+                contentType='application/json',
+                accept='application/json'
+            )
+            
+            response_body = json.loads(response['body'].read())
+            
+            # Extract text based on model type
+            if 'claude-3' in model_id:
+                return response_body['content'][0]['text']
+            else:
+                return response_body['completion']
+                
+        except Exception as e:
+            self.logger.error(f"Bedrock API error: {e}")
+            raise
+    
     def generate_with_system_prompt(self, system_prompt: str, user_prompt: str, 
                                   max_tokens: int = 4000, temperature: float = 0.7) -> str:
         """
@@ -129,6 +176,11 @@ class LLMClient:
                     ]
                 )
                 return response.content[0].text
+            
+            elif self.llm_config['provider'] == 'bedrock':
+                # For Bedrock, combine system and user prompts
+                combined_prompt = f"{system_prompt}\n\n{user_prompt}"
+                return self._generate_bedrock(combined_prompt, max_tokens, temperature)
                 
         except Exception as e:
             self.logger.error(f"Error generating response with system prompt: {e}")
