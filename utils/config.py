@@ -3,7 +3,7 @@ Configuration management for the focus group application
 """
 
 import os
-from typing import Dict, Any
+from typing import Dict, Any, List
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,7 +20,7 @@ class Config:
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
         self.default_llm_provider = os.getenv('DEFAULT_LLM_PROVIDER', 'openai')
-        self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo')  # Default to faster model
+        self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')  # Modern default model
         self.anthropic_model = os.getenv('ANTHROPIC_MODEL', 'claude-3-haiku-20240307')  # Default to faster model
         
         # AWS Bedrock Configuration

@@ -5,7 +5,7 @@ LLM client for handling different AI providers
 import logging
 import json
 from typing import Dict, Any, Optional
-import openai
+from openai import OpenAI
 import anthropic
 import boto3
 
@@ -19,7 +19,8 @@ class LLMClient:
         
         # Initialize appropriate client
         if self.llm_config['provider'] == 'openai':
-            self.client = openai.OpenAI(api_key=self.llm_config['api_key'])
+            # Use new OpenAI client from openai>=1.0
+            self.client = OpenAI(api_key=self.llm_config['api_key'])
         elif self.llm_config['provider'] == 'anthropic':
             self.client = anthropic.Anthropic(api_key=self.llm_config['api_key'])
         elif self.llm_config['provider'] == 'bedrock':
