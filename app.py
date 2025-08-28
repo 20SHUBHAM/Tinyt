@@ -53,12 +53,14 @@ def generate_personas():
         
         # Initialize persona generator agent
         persona_agent = PersonaGeneratorAgent(config)
+        logger.info("PersonaGeneratorAgent initialized")
         
         # Choose generation method based on quick_mode
         if quick_mode:
             personas = persona_agent.generate_quick_personas(description, num_personas)
         else:
             personas = persona_agent.generate_personas(description, num_personas)
+        logger.info("Personas generated | count=%s", len(personas) if isinstance(personas, list) else 0)
 
         if not personas or not isinstance(personas, list):
             logger.error("Persona generation returned no personas; using fallback")
@@ -66,14 +68,18 @@ def generate_personas():
         logger.info("/api/generate-personas success | personas=%d", len(personas))
         
         # Store personas in session
+        logger.info("Storing personas to session: %s", session_id)
         session_manager.store_personas(session_id, personas)
+        logger.info("Personas stored for session: %s", session_id)
         
-        return jsonify({
+        response_payload = {
             'success': True,
             'session_id': session_id,
             'personas': personas,
             'quick_mode': quick_mode
-        })
+        }
+        logger.info("Returning personas response | size_bytes≈%s", len(json.dumps(response_payload)))
+        return jsonify(response_payload), 200
         
     except Exception as e:
         logger.exception(f"Error generating personas: {str(e)}")
