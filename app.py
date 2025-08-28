@@ -41,6 +41,7 @@ def index():
 def generate_personas():
     """Generate personas from free-text description"""
     try:
+        logger.info("/api/generate-personas called")
         data = request.get_json()
         description = data.get('description', '')
         num_personas = data.get('num_personas', 6)
@@ -62,6 +63,7 @@ def generate_personas():
         if not personas or not isinstance(personas, list):
             logger.error("Persona generation returned no personas; using fallback")
             personas = persona_agent._generate_fallback_personas(description, num_personas)
+        logger.info("/api/generate-personas success | personas=%d", len(personas))
         
         # Store personas in session
         session_manager.store_personas(session_id, personas)
