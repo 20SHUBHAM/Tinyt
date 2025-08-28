@@ -1,0 +1,551 @@
+{% extends "base.html" %}
+
+{% block title %}Agentic Focus Group Platform - Home{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-4 fw-bold text-primary mb-3">
+                <i class="bi bi-robot me-3"></i>
+                Agentic Focus Group Platform
+            </h1>
+            <p class="lead text-muted mb-4">
+                Create realistic focus group discussions using AI agents powered by TinyTroupe. 
+                Generate dynamic personas, run authentic simulations, and extract actionable insights.
+            </p>
+            <button class="btn btn-primary btn-lg" id="startNewSession">
+                <i class="bi bi-play-circle me-2"></i>
+                Start New Session
+            </button>
+        </div>
+    </div>
+
+    <!-- Process Overview -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">5-Step AI-Powered Process</h2>
+            
+            <div class="row g-4">
+                <!-- Step 1 -->
+                <div class="col-md-6 col-lg-4 col-xl-2">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-person-plus fs-4"></i>
+                            </div>
+                            <h5 class="card-title">1. Dynamic Personas</h5>
+                            <p class="card-text small text-muted">
+                                Generate diverse personas from free-text descriptions with authentic backgrounds
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="col-md-6 col-lg-4 col-xl-2">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-diagram-3 fs-4"></i>
+                            </div>
+                            <h5 class="card-title">2. Discussion Framework</h5>
+                            <p class="card-text small text-muted">
+                                AI-generated structured framework with business-focused phases and questions
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="col-md-6 col-lg-4 col-xl-2">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-people fs-4"></i>
+                            </div>
+                            <h5 class="card-title">3. Focus Group Simulation</h5>
+                            <p class="card-text small text-muted">
+                                Realistic discussions with natural interruptions and group dynamics
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="col-md-6 col-lg-4 col-xl-2">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-file-text fs-4"></i>
+                            </div>
+                            <h5 class="card-title">4. Custom Summaries</h5>
+                            <p class="card-text small text-muted">
+                                Generate reports in any format from executive summaries to detailed analysis
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="col-md-6 col-lg-4 col-xl-2">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-question-circle fs-4"></i>
+                            </div>
+                            <h5 class="card-title">5. Interactive Q&A</h5>
+                            <p class="card-text small text-muted">
+                                Ask questions about the discussion with evidence-based answers
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Interface -->
+    <div id="mainApp" style="display: none;">
+        <!-- Step Navigation -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-center">
+                    <div class="step-indicator">
+                        <div class="step active" data-step="1">
+                            <span class="step-number">1</span>
+                            <span class="step-title">Personas</span>
+                        </div>
+                        <div class="step" data-step="2">
+                            <span class="step-number">2</span>
+                            <span class="step-title">Framework</span>
+                        </div>
+                        <div class="step" data-step="3">
+                            <span class="step-number">3</span>
+                            <span class="step-title">Simulation</span>
+                        </div>
+                        <div class="step" data-step="4">
+                            <span class="step-number">4</span>
+                            <span class="step-title">Summary</span>
+                        </div>
+                        <div class="step" data-step="5">
+                            <span class="step-number">5</span>
+                            <span class="step-title">Q&A</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1: Persona Generation -->
+        <div id="step1" class="step-content active">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">
+                                <i class="bi bi-person-plus me-2"></i>
+                                Step 1: Generate Dynamic Personas
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="audienceDescription" class="form-label">
+                                    <strong>Describe Your Target Audience</strong>
+                                </label>
+                                <textarea 
+                                    class="form-control" 
+                                    id="audienceDescription" 
+                                    rows="4" 
+                                    placeholder="e.g., College students interested in fitness apps, working professionals who use food delivery services, parents shopping for children's educational toys..."
+                                ></textarea>
+                                <div class="form-text">
+                                    Provide a free-text description of your target audience. The AI will create diverse, realistic personas.
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="numPersonas" class="form-label">Number of Personas</label>
+                                    <select class="form-select" id="numPersonas">
+                                        <option value="4">4 Personas</option>
+                                        <option value="5">5 Personas</option>
+                                        <option value="6" selected>6 Personas</option>
+                                        <option value="7">7 Personas</option>
+                                        <option value="8">8 Personas</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Generation Mode</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="quickMode">
+                                        <label class="form-check-label" for="quickMode">
+                                            Quick Mode (faster, basic personas)
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">Quick mode generates personas in ~15 seconds</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button class="btn btn-primary" id="generatePersonas">
+                                    <i class="bi bi-cpu me-2"></i>
+                                    Generate Personas
+                                </button>
+                                
+                                <div class="alert alert-info mt-3">
+                                    <small>
+                                        <strong>💡 Performance Tips:</strong><br>
+                                        • Use <strong>Quick Mode</strong> for faster results (~15 seconds)<br>
+                                        • Detailed Mode provides richer personas but takes longer (~30-60 seconds)<br>
+                                        • Consider starting with 4-5 personas for faster processing
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generated Personas Display -->
+                    <div id="personasDisplay" style="display: none;" class="mt-4">
+                        <div class="card shadow">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Generated Personas</h5>
+                                <button class="btn btn-outline-primary btn-sm" id="editPersonasBtn">
+                                    <i class="bi bi-pencil me-1"></i>Edit
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="personasList" class="row g-3"></div>
+                                
+                                <div class="mt-4 text-center">
+                                    <button class="btn btn-success" id="proceedToFramework">
+                                        <i class="bi bi-arrow-right me-2"></i>
+                                        Proceed to Framework Generation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Framework Generation -->
+        <div id="step2" class="step-content">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">
+                                <i class="bi bi-diagram-3 me-2"></i>
+                                Step 2: Generate Discussion Framework
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="discussionTopic" class="form-label">
+                                    <strong>Discussion Topic</strong>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="discussionTopic" 
+                                    placeholder="e.g., Mobile fitness app preferences, Food delivery service experiences..."
+                                >
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="businessContext" class="form-label">
+                                    <strong>Business Context & Goals</strong>
+                                </label>
+                                <textarea 
+                                    class="form-control" 
+                                    id="businessContext" 
+                                    rows="3" 
+                                    placeholder="Describe your business goals, what you want to learn, key decisions this research will inform..."
+                                ></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="sessionDuration" class="form-label">Session Duration</label>
+                                    <select class="form-select" id="sessionDuration">
+                                        <option value="30">30 minutes</option>
+                                        <option value="45">45 minutes</option>
+                                        <option value="60" selected>60 minutes</option>
+                                        <option value="90">90 minutes</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button class="btn btn-success" id="generateFramework">
+                                    <i class="bi bi-cpu me-2"></i>
+                                    Generate Framework
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generated Framework Display -->
+                    <div id="frameworkDisplay" style="display: none;" class="mt-4">
+                        <div class="card shadow">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Discussion Framework</h5>
+                                <button class="btn btn-outline-success btn-sm" id="editFrameworkBtn">
+                                    <i class="bi bi-pencil me-1"></i>Edit
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="frameworkContent"></div>
+                                
+                                <div class="mt-4 text-center">
+                                    <button class="btn btn-warning" id="proceedToSimulation">
+                                        <i class="bi bi-arrow-right me-2"></i>
+                                        Run Focus Group Simulation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Simulation -->
+        <div id="step3" class="step-content">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header bg-warning text-white">
+                            <h4 class="mb-0">
+                                <i class="bi bi-people me-2"></i>
+                                Step 3: Focus Group Simulation
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="simulationStatus" class="text-center py-5">
+                                <p class="lead">Ready to run your focus group simulation</p>
+                                <button class="btn btn-warning btn-lg" id="runSimulation">
+                                    <i class="bi bi-play-circle me-2"></i>
+                                    Start Simulation
+                                </button>
+                            </div>
+                            
+                            <!-- Simulation Results -->
+                            <div id="simulationResults" style="display: none;">
+                                <div class="row">
+                                    <div class="col-lg-8">
+                                        <h5>Discussion Transcript</h5>
+                                        <div id="conversationLog" class="conversation-log"></div>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <h5>Live Analysis</h5>
+                                        <div id="liveAnalysis" class="analysis-panel"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 text-center">
+                                    <button class="btn btn-info" id="proceedToSummary">
+                                        <i class="bi bi-arrow-right me-2"></i>
+                                        Generate Summary & Reports
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Summary Generation -->
+        <div id="step4" class="step-content">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow">
+                        <div class="card-header bg-info text-white">
+                            <h4 class="mb-0">
+                                <i class="bi bi-file-text me-2"></i>
+                                Step 4: Generate Custom Summary
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="summaryType" class="form-label">
+                                    <strong>Summary Type</strong>
+                                </label>
+                                <select class="form-select" id="summaryType">
+                                    <option value="executive">Executive Summary</option>
+                                    <option value="detailed">Detailed Report</option>
+                                    <option value="insights_only">Insights Only</option>
+                                    <option value="comprehensive" selected>Comprehensive Summary</option>
+                                    <option value="custom">Custom Format</option>
+                                </select>
+                            </div>
+                            
+                            <div id="customSummaryOptions" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="customSections" class="form-label">Custom Sections</label>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="customSections" 
+                                        rows="3" 
+                                        placeholder="Specify the sections and format you want in your summary..."
+                                    ></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button class="btn btn-info" id="generateSummary">
+                                    <i class="bi bi-cpu me-2"></i>
+                                    Generate Summary
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generated Summary Display -->
+                    <div id="summaryDisplay" style="display: none;" class="mt-4">
+                        <div class="card shadow">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Generated Summary</h5>
+                                <div>
+                                    <button class="btn btn-outline-info btn-sm me-2" id="downloadSummary">
+                                        <i class="bi bi-download me-1"></i>Download
+                                    </button>
+                                    <button class="btn btn-info btn-sm" id="generateAnotherSummary">
+                                        <i class="bi bi-plus me-1"></i>Generate Another
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="summaryContent"></div>
+                                
+                                <div class="mt-4 text-center">
+                                    <button class="btn btn-secondary" id="proceedToQA">
+                                        <i class="bi bi-arrow-right me-2"></i>
+                                        Interactive Q&A
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Interactive Q&A -->
+        <div id="step5" class="step-content">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow">
+                        <div class="card-header bg-secondary text-white">
+                            <h4 class="mb-0">
+                                <i class="bi bi-question-circle me-2"></i>
+                                Step 5: Interactive Q&A
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- Question Input -->
+                            <div class="mb-3">
+                                <label for="userQuestion" class="form-label">
+                                    <strong>Ask a Question About the Discussion</strong>
+                                </label>
+                                <div class="input-group">
+                                    <textarea 
+                                        class="form-control" 
+                                        id="userQuestion" 
+                                        rows="2" 
+                                        placeholder="e.g., What were the main pain points mentioned? How did participants compare different solutions?"
+                                    ></textarea>
+                                    <button class="btn btn-secondary" id="askQuestion">
+                                        <i class="bi bi-send me-1"></i>Ask
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Suggested Questions -->
+                            <div class="mb-4">
+                                <h6>Suggested Questions:</h6>
+                                <div id="suggestedQuestions" class="d-flex flex-wrap gap-2">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                            
+                            <!-- Q&A History -->
+                            <div id="qaHistory"></div>
+                            
+                            <!-- Export Options -->
+                            <div class="mt-4 text-center">
+                                <button class="btn btn-primary" id="exportSession">
+                                    <i class="bi bi-download me-2"></i>
+                                    Export Complete Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mt-5" id="featuresSection">
+        <div class="col-12">
+            <h2 class="text-center mb-4">Platform Features</h2>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="text-primary mb-3">
+                                <i class="bi bi-cpu-fill fs-1"></i>
+                            </div>
+                            <h5 class="card-title">AI-Powered Agents</h5>
+                            <p class="card-text">
+                                Specialized AI agents handle each aspect: persona generation, discussion moderation, 
+                analysis, and Q&A - fully automated and dynamic.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="text-success mb-3">
+                                <i class="bi bi-graph-up fs-1"></i>
+                            </div>
+                            <h5 class="card-title">Business-Focused</h5>
+                            <p class="card-text">
+                                Every component is designed to generate actionable business insights, 
+                strategic recommendations, and data-driven decision support.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="text-warning mb-3">
+                                <i class="bi bi-lightning-fill fs-1"></i>
+                            </div>
+                            <h5 class="card-title">Production Ready</h5>
+                            <p class="card-text">
+                                Built for scale with proper error handling, session management, 
+                and deployment configuration for Replit and other platforms.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/focus-group.js') }}"></script>
+{% endblock %}
