@@ -26,86 +26,115 @@ class PersonaGeneratorAgent(BaseAgent):
             List of detailed persona dictionaries
         """
         
+        # Simpler, robust format: one persona per line, pipe-delimited, easy to parse
         prompt = f"""
-Return a strict JSON object with this exact top-level shape and no extra keys:
-{{
-  "personas": [
-    {{
-      "id": "unique_id",
-      "name": "Full Name",
-      "demographics": {{
-        "age": 25,
-        "gender": "string",
-        "location": "City",
-        "occupation": "Job Title",
-        "income_level": "Level"
-      }},
-      "psychographics": {{
-        "personality_traits": ["trait1", "trait2", "trait3"],
-        "values": ["value1", "value2"],
-        "lifestyle": "brief description",
-        "communication_style": "brief description",
-        "decision_making": "brief description"
-      }},
-      "behaviors": {{
-        "shopping_behavior": "brief description",
-        "brand_preferences": "brief description",
-        "technology_usage": "brief description",
-        "social_media": "brief description",
-        "information_sources": ["source1", "source2"]
-      }},
-      "context_specific": {{
-        "pain_points": ["point1", "point2"],
-        "goals": ["goal1", "goal2"],
-        "budget_constraints": "brief description",
-        "experience_level": "beginner/intermediate/expert",
-        "preferences": "brief description"
-      }},
-      "discussion_style": {{
-        "participation_level": "high/medium/low",
-        "agreement_tendency": "agreeable/neutral/contrarian",
-        "leadership_style": "leader/follower/balanced",
-        "interruption_pattern": "frequent/occasional/rare",
-        "confidence_level": "high/medium/low",
-        "speaking_style": "brief description"
-      }},
-      "background_story": "One sentence background story"
-    }}
-  ]
-}}
+Create {num_personas} diverse consumer personas for: "{description}".
 
-Generate exactly {num_personas} diverse personas for the audience: "{description}".
-The response MUST be valid JSON per RFC 8259 with double-quoted keys/strings, no trailing commas, and no commentary.
+Return ONLY {num_personas} lines using this exact pipe-delimited format (no extra text):
+- Name | age | occupation | location | traits: trait1, trait2, trait3 | style: speaking style | story: one sentence background
 """
         
         try:
-            # Use faster generation with optimized parameters
-            response = self.llm_client.generate(prompt, max_tokens=1200, temperature=0.7, response_format_json=True)
+            # Use simple text generation, then parse lines
+            response = self.llm_client.generate(prompt, max_tokens=800, temperature=0.6)
             
             if not response or not isinstance(response, str):
                 self.logger.error("Persona generation returned empty response")
                 return self._generate_fallback_personas(description, num_personas)
             
-            # Expect a JSON object with a personas array
-            obj = json.loads(response)
-            personas = obj.get("personas", [])
-            if not isinstance(personas, list) or len(personas) == 0:
-                self.logger.error("No personas array found or empty in JSON. Returning fallback personas.")
+            personas = self._parse_pipe_personas(response, num_personas, description)
+            if not personas:
                 return self._generate_fallback_personas(description, num_personas)
-            
-            # Add unique IDs if not present
-            for persona in personas:
-                if 'id' not in persona:
-                    persona['id'] = str(uuid.uuid4())
-            
             return personas
             
         except json.JSONDecodeError as e:
+            # Not using JSON format for main generation; treat as generic error
             self.logger.error(f"Failed to parse persona JSON: {e}")
             return self._generate_fallback_personas(description, num_personas)
         except Exception as e:
             self.logger.error(f"Error generating personas: {e}")
             return self._generate_fallback_personas(description, num_personas)
+
+    def _parse_pipe_personas(self, text: str, num_personas: int, description: str) -> List[Dict[str, Any]]:
+        """Parse pipe-delimited personas from LLM text into full persona dicts."""
+        lines = [l.strip() for l in text.splitlines() if l.strip() and l.strip().startswith('-')]
+        personas: List[Dict[str, Any]] = []
+        for line in lines:
+            # Remove leading dash and any bullets
+            if line.startswith('-'):
+                line = line[1:].strip()
+            parts = [p.strip() for p in line.split('|')]
+            if len(parts) < 4:
+                continue
+            name = parts[0]
+            age_str = parts[1]
+            occupation = parts[2]
+            location = parts[3]
+            traits_part = next((p for p in parts if p.lower().startswith('traits:')), '')
+            style_part = next((p for p in parts if p.lower().startswith('style:')), '')
+            story_part = next((p for p in parts if p.lower().startswith('story:')), '')
+
+            try:
+                age = int(''.join([c for c in age_str if c.isdigit()]) or 0) or 28
+            except Exception:
+                age = 28
+
+            traits_list = []
+            if traits_part:
+                traits_list = [t.strip() for t in traits_part.split(':', 1)[-1].split(',') if t.strip()]
+            speaking_style = style_part.split(':', 1)[-1].strip() if style_part else 'Conversational'
+            story = story_part.split(':', 1)[-1].strip() if story_part else f"Interested in {description}"
+
+            personas.append({
+                "id": str(uuid.uuid4()),
+                "name": name or "Participant",
+                "demographics": {
+                    "age": age,
+                    "gender": "diverse",
+                    "location": location or "Various",
+                    "occupation": occupation or "Professional",
+                    "income_level": "moderate"
+                },
+                "psychographics": {
+                    "personality_traits": traits_list or ["curious", "thoughtful"],
+                    "values": ["authenticity", "value"],
+                    "lifestyle": "Modern lifestyle",
+                    "communication_style": "Direct and honest",
+                    "decision_making": "Research-based"
+                },
+                "behaviors": {
+                    "shopping_behavior": "Online and offline mix",
+                    "brand_preferences": "Quality-focused",
+                    "technology_usage": "Regular user",
+                    "social_media": "Active",
+                    "information_sources": ["online", "friends"]
+                },
+                "context_specific": {
+                    "pain_points": ["budget constraints"],
+                    "goals": ["good value"],
+                    "budget_constraints": "Moderate budget",
+                    "experience_level": "intermediate",
+                    "preferences": "Practical"
+                },
+                "discussion_style": {
+                    "participation_level": "medium",
+                    "agreement_tendency": "balanced",
+                    "leadership_style": "collaborative",
+                    "interruption_pattern": "occasional",
+                    "confidence_level": "medium",
+                    "speaking_style": speaking_style
+                },
+                "background_story": story
+            })
+
+            if len(personas) >= num_personas:
+                break
+
+        # If fewer than requested, top up with fallbacks
+        while len(personas) < num_personas:
+            personas.append(self._generate_fallback_personas(description, 1)[0])
+
+        return personas
     
     def generate_quick_personas(self, description: str, num_personas: int = 6) -> List[Dict[str, Any]]:
         """
