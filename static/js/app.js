@@ -3,6 +3,7 @@
 class FocusGroupApp {
     constructor() {
         this.currentStep = 1;
+        this.loadingModalInstance = null;
         this.sessionData = {
             sessionId: null,
             personas: [],
@@ -114,17 +115,24 @@ class FocusGroupApp {
         document.getElementById('loadingText').textContent = text;
         document.getElementById('loadingSubtext').textContent = subtext;
         
-        const modalInstance = new bootstrap.Modal(modal);
-        modalInstance.show();
+        this.loadingModalInstance = bootstrap.Modal.getInstance(modal) || new bootstrap.Modal(modal);
+        this.loadingModalInstance.show();
         
-        return modalInstance;
+        return this.loadingModalInstance;
     }
     
     hideLoading() {
         const modal = document.getElementById('loadingModal');
-        const modalInstance = bootstrap.Modal.getInstance(modal);
+        const modalInstance = this.loadingModalInstance || bootstrap.Modal.getInstance(modal);
         if (modalInstance) {
             modalInstance.hide();
+            this.loadingModalInstance = null;
+        } else if (modal) {
+            // Hard fallback to ensure UI never gets stuck
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
         }
     }
     
@@ -169,7 +177,14 @@ class FocusGroupApp {
         
         try {
             const response = await fetch(endpoint, options);
-            const result = await response.json();
+            const text = await response.text();
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                console.error('Non-JSON API response for', endpoint, text);
+                throw new Error('Invalid server response');
+            }
             
             if (!result.success) {
                 throw new Error(result.error || 'API request failed');
