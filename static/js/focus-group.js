@@ -71,16 +71,19 @@ class FocusGroupWorkflow {
         const loading = this.app.showLoading(loadingText, loadingSubtext);
         
         try {
+            console.log('[FG] Calling /api/generate-personas', { numPersonas, quickMode });
             const result = await this.app.apiCall('/api/generate-personas', 'POST', {
                 description: description,
                 num_personas: numPersonas,
                 quick_mode: quickMode
             });
+            console.log('[FG] Personas API response', result);
             
             this.app.sessionData.sessionId = result.session_id;
             this.app.sessionData.personas = result.personas;
             
             this.displayPersonas(result.personas);
+            console.log('[FG] Personas displayed', { count: result.personas?.length });
             this.app.showAlert('Personas generated successfully!', 'success');
             
         } catch (error) {
@@ -94,6 +97,16 @@ class FocusGroupWorkflow {
     displayPersonas(personas) {
         const container = document.getElementById('personasList');
         const display = document.getElementById('personasDisplay');
+        if (!container || !display) {
+            console.error('[FG] personas container/display not found', { container: !!container, display: !!display });
+            this.app.showAlert('UI error: personas container not found.', 'danger');
+            return;
+        }
+        if (!Array.isArray(personas) || personas.length === 0) {
+            console.warn('[FG] No personas to display');
+            this.app.showAlert('No personas returned. Please try again.', 'warning');
+            return;
+        }
         
         container.innerHTML = personas.map(persona => this.app.formatPersonaCard(persona)).join('');
         display.style.display = 'block';
