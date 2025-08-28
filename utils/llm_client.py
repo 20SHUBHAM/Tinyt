@@ -33,7 +33,7 @@ class LLMClient:
         else:
             raise ValueError(f"Unsupported provider: {self.llm_config['provider']}")
     
-    def generate(self, prompt: str, max_tokens: int = 2000, temperature: float = 0.7) -> str:
+    def generate(self, prompt: str, max_tokens: int = 2000, temperature: float = 0.7, response_format_json: bool = False) -> str:
         """
         Generate text using the configured LLM
         
@@ -48,7 +48,7 @@ class LLMClient:
         
         try:
             if self.llm_config['provider'] == 'openai':
-                return self._generate_openai(prompt, max_tokens, temperature)
+                return self._generate_openai(prompt, max_tokens, temperature, response_format_json)
             elif self.llm_config['provider'] == 'anthropic':
                 return self._generate_anthropic(prompt, max_tokens, temperature)
             elif self.llm_config['provider'] == 'bedrock':
@@ -60,10 +60,13 @@ class LLMClient:
             self.logger.error(f"Error generating response: {e}")
             raise
     
-    def _generate_openai(self, prompt: str, max_tokens: int, temperature: float) -> str:
+    def _generate_openai(self, prompt: str, max_tokens: int, temperature: float, response_format_json: bool = False) -> str:
         """Generate response using OpenAI"""
         
         self.logger.info("[OpenAI] chat.completions.create start | model=%s | max_tokens=%s | temp=%.2f", self.llm_config['model'], max_tokens, temperature)
+        kwargs = {}
+        if response_format_json:
+            kwargs["response_format"] = {"type": "json_object"}
         response = self.client.chat.completions.create(
             model=self.llm_config['model'],
             messages=[
@@ -72,7 +75,8 @@ class LLMClient:
             ],
             max_tokens=max_tokens,
             temperature=temperature,
-            timeout=30  # tighter timeout
+            timeout=30,  # tighter timeout
+            **kwargs
         )
         content = response.choices[0].message.content
         self.logger.info("[OpenAI] response received | content_len=%s", len(content) if content else 0)

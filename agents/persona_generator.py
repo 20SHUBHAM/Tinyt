@@ -26,72 +26,72 @@ class PersonaGeneratorAgent(BaseAgent):
             List of detailed persona dictionaries
         """
         
-        prompt = f"""Create {num_personas} diverse personas for: "{description}"
+        prompt = f"""
+Return a strict JSON object with this exact top-level shape and no extra keys:
+{{
+  "personas": [
+    {{
+      "id": "unique_id",
+      "name": "Full Name",
+      "demographics": {{
+        "age": 25,
+        "gender": "string",
+        "location": "City",
+        "occupation": "Job Title",
+        "income_level": "Level"
+      }},
+      "psychographics": {{
+        "personality_traits": ["trait1", "trait2", "trait3"],
+        "values": ["value1", "value2"],
+        "lifestyle": "brief description",
+        "communication_style": "brief description",
+        "decision_making": "brief description"
+      }},
+      "behaviors": {{
+        "shopping_behavior": "brief description",
+        "brand_preferences": "brief description",
+        "technology_usage": "brief description",
+        "social_media": "brief description",
+        "information_sources": ["source1", "source2"]
+      }},
+      "context_specific": {{
+        "pain_points": ["point1", "point2"],
+        "goals": ["goal1", "goal2"],
+        "budget_constraints": "brief description",
+        "experience_level": "beginner/intermediate/expert",
+        "preferences": "brief description"
+      }},
+      "discussion_style": {{
+        "participation_level": "high/medium/low",
+        "agreement_tendency": "agreeable/neutral/contrarian",
+        "leadership_style": "leader/follower/balanced",
+        "interruption_pattern": "frequent/occasional/rare",
+        "confidence_level": "high/medium/low",
+        "speaking_style": "brief description"
+      }},
+      "background_story": "One sentence background story"
+    }}
+  ]
+}}
 
-Return ONLY a JSON array with this exact structure for each persona:
-
-[{{
-  "id": "unique_id",
-  "name": "Full Name",
-  "demographics": {{
-    "age": 25,
-    "gender": "string",
-    "location": "City",
-    "occupation": "Job Title",
-    "income_level": "Level"
-  }},
-  "psychographics": {{
-    "personality_traits": ["trait1", "trait2", "trait3"],
-    "values": ["value1", "value2"],
-    "lifestyle": "brief description",
-    "communication_style": "brief description",
-    "decision_making": "brief description"
-  }},
-  "behaviors": {{
-    "shopping_behavior": "brief description",
-    "brand_preferences": "brief description", 
-    "technology_usage": "brief description",
-    "social_media": "brief description",
-    "information_sources": ["source1", "source2"]
-  }},
-  "context_specific": {{
-    "pain_points": ["point1", "point2"],
-    "goals": ["goal1", "goal2"],
-    "budget_constraints": "brief description",
-    "experience_level": "beginner/intermediate/expert",
-    "preferences": "brief description"
-  }},
-  "discussion_style": {{
-    "participation_level": "high/medium/low",
-    "agreement_tendency": "agreeable/neutral/contrarian",
-    "leadership_style": "leader/follower/balanced",
-    "interruption_pattern": "frequent/occasional/rare",
-    "confidence_level": "high/medium/low",
-    "speaking_style": "brief description"
-  }},
-  "background_story": "One sentence background story"
-}}]
-
-Make personas diverse in demographics, personality, and behavior. Include realistic constraints and authentic details."""
+Generate exactly {num_personas} diverse personas for the audience: "{description}".
+The response MUST be valid JSON per RFC 8259 with double-quoted keys/strings, no trailing commas, and no commentary.
+"""
         
         try:
             # Use faster generation with optimized parameters
-            response = self.llm_client.generate(prompt, max_tokens=1500, temperature=0.7)
+            response = self.llm_client.generate(prompt, max_tokens=1200, temperature=0.7, response_format_json=True)
             
             if not response or not isinstance(response, str):
                 self.logger.error("Persona generation returned empty response")
                 return self._generate_fallback_personas(description, num_personas)
             
-            # Extract JSON from response
-            json_start = response.find('[')
-            json_end = response.rfind(']') + 1
-            
-            if json_start == -1 or json_end <= json_start:
-                self.logger.error("No valid JSON array found in response. Returning fallback personas.")
+            # Expect a JSON object with a personas array
+            obj = json.loads(response)
+            personas = obj.get("personas", [])
+            if not isinstance(personas, list) or len(personas) == 0:
+                self.logger.error("No personas array found or empty in JSON. Returning fallback personas.")
                 return self._generate_fallback_personas(description, num_personas)
-            
-            json_str = response[json_start:json_end]
-            personas = json.loads(json_str)
             
             # Add unique IDs if not present
             for persona in personas:
