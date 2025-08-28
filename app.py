@@ -58,6 +58,10 @@ def generate_personas():
             personas = persona_agent.generate_quick_personas(description, num_personas)
         else:
             personas = persona_agent.generate_personas(description, num_personas)
+
+        if not personas or not isinstance(personas, list):
+            logger.error("Persona generation returned no personas; using fallback")
+            personas = persona_agent._generate_fallback_personas(description, num_personas)
         
         # Store personas in session
         session_manager.store_personas(session_id, personas)
@@ -70,7 +74,7 @@ def generate_personas():
         })
         
     except Exception as e:
-        logger.error(f"Error generating personas: {str(e)}")
+        logger.exception(f"Error generating personas: {str(e)}")
         return jsonify({
             'success': False,
             'error': str(e)

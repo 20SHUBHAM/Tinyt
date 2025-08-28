@@ -76,14 +76,19 @@ Make personas diverse in demographics, personality, and behavior. Include realis
         
         try:
             # Use faster generation with optimized parameters
-            response = self.llm_client.generate(prompt, max_tokens=3000, temperature=0.7)
+            response = self.llm_client.generate(prompt, max_tokens=1500, temperature=0.7)
+            
+            if not response or not isinstance(response, str):
+                self.logger.error("Persona generation returned empty response")
+                return self._generate_fallback_personas(description, num_personas)
             
             # Extract JSON from response
             json_start = response.find('[')
             json_end = response.rfind(']') + 1
             
-            if json_start == -1 or json_end == 0:
-                raise ValueError("No valid JSON array found in response")
+            if json_start == -1 or json_end <= json_start:
+                self.logger.error("No valid JSON array found in response. Returning fallback personas.")
+                return self._generate_fallback_personas(description, num_personas)
             
             json_str = response[json_start:json_end]
             personas = json.loads(json_str)
@@ -97,9 +102,7 @@ Make personas diverse in demographics, personality, and behavior. Include realis
             
         except json.JSONDecodeError as e:
             self.logger.error(f"Failed to parse persona JSON: {e}")
-            # Return fallback personas
             return self._generate_fallback_personas(description, num_personas)
-        
         except Exception as e:
             self.logger.error(f"Error generating personas: {e}")
             return self._generate_fallback_personas(description, num_personas)

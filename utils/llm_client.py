@@ -33,7 +33,7 @@ class LLMClient:
         else:
             raise ValueError(f"Unsupported provider: {self.llm_config['provider']}")
     
-    def generate(self, prompt: str, max_tokens: int = 4000, temperature: float = 0.7) -> str:
+    def generate(self, prompt: str, max_tokens: int = 2000, temperature: float = 0.7) -> str:
         """
         Generate text using the configured LLM
         
@@ -63,6 +63,7 @@ class LLMClient:
     def _generate_openai(self, prompt: str, max_tokens: int, temperature: float) -> str:
         """Generate response using OpenAI"""
         
+        self.logger.info("[OpenAI] chat.completions.create start | model=%s | max_tokens=%s | temp=%.2f", self.llm_config['model'], max_tokens, temperature)
         response = self.client.chat.completions.create(
             model=self.llm_config['model'],
             messages=[
@@ -71,10 +72,11 @@ class LLMClient:
             ],
             max_tokens=max_tokens,
             temperature=temperature,
-            timeout=60  # 60 second timeout
+            timeout=30  # tighter timeout
         )
-        
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+        self.logger.info("[OpenAI] response received | content_len=%s", len(content) if content else 0)
+        return content
     
     def _generate_anthropic(self, prompt: str, max_tokens: int, temperature: float) -> str:
         """Generate response using Anthropic Claude"""
@@ -154,6 +156,7 @@ class LLMClient:
         
         try:
             if self.llm_config['provider'] == 'openai':
+                self.logger.info("[OpenAI] chat.completions.create (with system) start | model=%s", self.llm_config['model'])
                 response = self.client.chat.completions.create(
                     model=self.llm_config['model'],
                     messages=[
@@ -161,9 +164,12 @@ class LLMClient:
                         {"role": "user", "content": user_prompt}
                     ],
                     max_tokens=max_tokens,
-                    temperature=temperature
+                    temperature=temperature,
+                    timeout=30
                 )
-                return response.choices[0].message.content
+                content = response.choices[0].message.content
+                self.logger.info("[OpenAI] response received | content_len=%s", len(content) if content else 0)
+                return content
                 
             elif self.llm_config['provider'] == 'anthropic':
                 # Anthropic handles system prompt differently
